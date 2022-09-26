@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <typeAliases>
+        <typeAlias alias="교과목" type="persistence.dto.교과목DTO"/>
+        <typeAlias alias="수강신청" type="persistence.dto.수강신청DTO"/>
+        <typeAlias alias="담당과목목록" type="persistence.dto.담당과목목록DTO"/>
+        <typeAlias alias="개설교과목" type="persistence.dto.개설교과목DTO"/>
+        <typeAlias alias="수강신청기간" type="persistence.dto.수강신청기간DTO"/>
+        <typeAlias alias="강의계획서입력기간" type="persistence.dto.강의계획서입력기간DTO"/>
+        <typeAlias alias="강의시간" type="persistence.dto.강의시간DTO"/>
+        <typeAlias alias="학생" type="persistence.dto.학생DTO"/>
+
+    </typeAliases>
+
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <!--  connecting to Local MySql -->
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://localhost/sugang_db?characterEncoding=utf8&amp;serverTimezone=UTC&amp;useSSL=false"/>
+                <property name="username" value="root"/>
+                <property name="password" value="Ays34950204117!"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <mapper resource="sqlmapper/교과목DTO.xml"/>
+        <mapper resource="sqlmapper/강의계획서입력기간DTO.xml"/>
+        <mapper resource="sqlmapper/강의시간DTO.xml"/>
+        <mapper resource="sqlmapper/담당과목목록DTO.xml"/>
+        <mapper resource="sqlmapper/수강신청DTO.xml"/>
+        <mapper resource="sqlmapper/수강신청기간DTO.xml"/>
+    </mappers>
+</configuration>

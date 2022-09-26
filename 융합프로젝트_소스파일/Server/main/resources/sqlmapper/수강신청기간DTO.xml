@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "mapper.수강신청기간mapper">
+
+    <resultMap id = "수강신청기간" type="수강신청기간">
+        <result property = "교과목번호" column="교과목번호"/>
+        <result property = "수강신청시작시간" column="수강신청시작시간"/>
+        <result property = "수강신청종료시간" column="수강신청종료시간"/>
+    </resultMap>
+
+    <!--수강신청기간을 입력하는 쿼리-->
+    <insert id="수강신청기간입력">
+        INSERT INTO 수강신청기간(교과목번호, 수강신청시작시간, 수강신청종료시간) VALUES (#{교과목번호}, #{수강신청시작시간}, #{수강신청종료시간});
+    </insert>
+
+    <!--특정 학년의 수강신청기간을 수정하는 쿼리-->
+    <update id="학년별수강신청기간수정">
+        UPDATE 수강신청기간 SET 수강신청시작시간 = #{수강신청시작시간}, 수강신청종료시간 = #{수강신청종료시간}
+        WHERE ANY (SELECT 대상학년 FROM 교과목
+        NATURAL JOIN 개설교과목
+        WHERE 대상학년 = #{대상학년});
+    </update>
+
+    <!--특정 학년의 수강신청시작시간을 수정하는 쿼리-->
+    <update id="학년별수강신청시작기간수정">
+        UPDATE 수강신청기간 SET 수강신청시작시간 = #{수강신청시작시간}
+        WHERE ANY (SELECT 대상학년 FROM 교과목
+        NATURAL JOIN 개설교과목
+        WHERE 대상학년 = #{대상학년});
+    </update>
+
+    <!--특정 학년의 수강신청종료시간을 수정하는 쿼리-->
+    <update id="학년별수강신청종료기간수정">
+        UPDATE 수강신청기간 SET 수강신청종료시간 = #{수강신청종료시간}
+        WHERE ANY (SELECT 대상학년 FROM 교과목
+        NATURAL JOIN 개설교과목
+        WHERE 대상학년 = #{대상학년});
+    </update>
+
+    <!--선택한 교과목의 수강신청기간을 출력하는 쿼리-->
+    <select id="선택교과목수강신청기간출력">
+        SELECT * FROM 수강신청기간 WHERE 교과목번호 = #{교과목번호};
+    </select>
+
+    <!--수강신청 기간을 삭제하는 쿼리-->
+    <delete id="수강신청기간삭제">
+        DELETE FROM 수강신청기간 WHERE 교과목번호 = #{교과목번호}
+    </delete>
+
+</mapper>
+
+        <!-- SELECT는 캐시에 결과값을 저장 / I, U, D는 테이블에 변화가 생기므로 flush = true설정, 캐시를 밀어야함 -->

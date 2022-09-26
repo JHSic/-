@@ -1,0 +1,69 @@
+CREATE TRIGGER 새로운개설교과목입력시수강신청기간설정
+AFTER INSERT ON 개설교과목
+FOR EACH ROW
+INSERT INTO 수강신청기간 VALUES (new.교과목번호, 
+(SELECT 수3.수강신청시작시간 FROM (SELECT 수1.수강신청시작시간 FROM 수강신청기간 수1 natural join 교과목 WHERE 교과목.대상학년 = ANY(SELECT 대상학년 FROM 교과목 WHERE 교과목.교과목번호 = new.교과목번호))수3 LIMIT 1),
+(SELECT 수4.수강신청종료시간 FROM (SELECT 수2.수강신청종료시간 FROM 수강신청기간 수2 natural join 교과목 WHERE 교과목.대상학년 = ANY(SELECT 대상학년 FROM 교과목 WHERE 교과목.교과목번호 = new.교과목번호))수4 LIMIT 1));
+
+CREATE TRIGGER 수강신청시신청총학점변경
+AFTER INSERT ON 수강신청 
+FOR EACH ROW
+UPDATE 학생 학생 SET 신청총학점 = (SELECT SUM(학점)
+from 수강신청
+natural join 교과목
+WHERE 사용자ID = 학생.사용자ID)
+WHERE new.사용자ID = 학생.사용자ID;
+
+CREATE TRIGGER 수강신청시신청과목수변경 
+AFTER INSERT ON 수강신청 
+FOR EACH ROW 
+UPDATE 학생 학생 SET 신청과목수 = (SELECT COUNT(수강신청.사용자ID)
+from 수강신청
+WHERE 사용자ID = 학생.사용자ID)
+WHERE new.사용자ID = 학생.사용자ID;
+
+CREATE TRIGGER 수강신청시신청인원변경
+AFTER INSERT ON 수강신청
+FOR EACH ROW
+UPDATE 개설교과목 개설교과목 SET 수강신청인원 = (SELECT COUNT(수강신청.교과목번호)
+FROM 수강신청
+WHERE 교과목번호 = 개설교과목.교과목번호)
+WHERE new.교과목번호 = 개설교과목.교과목번호;
+
+CREATE TRIGGER 수강취소시신청인원변경
+AFTER DELETE ON 수강신청
+FOR EACH ROW
+UPDATE 개설교과목 개설교과목 SET 수강신청인원 = (SELECT COUNT(수강신청.교과목번호)
+FROM 수강신청
+WHERE 교과목번호 = 개설교과목.교과목번호)
+WHERE old.교과목번호 = 개설교과목.교과목번호;
+
+CREATE TRIGGER 학생입력시유형설정
+AFTER INSERT ON 학생
+FOR EACH ROW
+UPDATE 사용자 사용자 SET 사용자유형 = 3
+WHERE new.사용자ID = 사용자.사용자ID;
+
+CREATE TRIGGER 교수입력시유형설정
+AFTER INSERT ON 교수
+FOR EACH ROW
+UPDATE 사용자 사용자 SET 사용자유형 = 2
+WHERE new.사용자ID = 사용자.사용자ID;
+
+CREATE TRIGGER 관리자입력시유형설정
+AFTER INSERT ON 관리자
+FOR EACH ROW
+UPDATE 사용자 사용자 SET 사용자유형 = 1
+WHERE new.사용자ID = 사용자.사용자ID;
+
+CREATE TRIGGER 개설교과목입력시개설여부변경
+AFTER INSERT ON 개설교과목
+FOR EACH ROW
+UPDATE 교과목 교과목 SET 개설여부 = 1
+WHERE NEW.교과목번호 = 교과목.교과목번호;
+
+CREATE TRIGGER 개설교과목삭제시개설여부변경
+AFTER DELETE ON 개설교과목
+FOR EACH ROW
+UPDATE 교과목 교과목 SET 개설여부 = 0
+WHERE old.교과목번호 = 교과목.교과목번호;

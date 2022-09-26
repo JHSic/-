@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "mapper.수강신청mapper">
+
+    <resultMap id = "수강신청" type="수강신청">
+        <result property = "교과목번호" column="교과목번호"/>
+        <result property = "사용자ID" column="사용자ID"/>
+    </resultMap>
+
+    <resultMap id = "학생수강신청입력관련정보" type="학생">
+        <result property = "사용자ID" column="사용자ID"/>
+        <result property = "학년" column="학년"/>
+        <result property = "신청과목수" column="신청총학점"/>
+        <result property = "신청총학점" column="신청총학점"/>
+    </resultMap>
+
+    <resultMap id="교과목수강신청학생목록조회" type="학생">
+        <result property = "사용자ID" column="사용자ID"/>
+        <result property = "사용자명" column="사용자명"/>
+        <result property = "학년" column="학년"/>
+        <result property="학과명" column="학과명"/>
+    </resultMap>
+
+    <resultMap id = "개설교과목" type="개설교과목">
+        <result property = "교과목번호" column="교과목번호"/>
+        <result property = "교과목이름" column="교과목이름"/>
+        <result property = "대상학년" column="대상학년"/>
+        <result property = "교육과정" column="교육과정"/>
+        <result property = "이수구분" column="이수구분"/>
+        <result property = "학점" column="학점"/>
+        <result property = "설계과목여부" column="설계과목여부"/>
+        <result property = "개설여부" column="개설여부"/>
+
+        <result property = "최대수강인원" column="최대수강인원"/>
+        <result property = "수강신청인원" column="수강신청인원"/>
+        <result property = "강의실" column="강의실"/>
+        <result property = "강의계획" column="강의계획"/>
+        <result property = "분반" column="분반"/>
+
+        <result property = "수업요일" column="수업요일"/>
+        <result property = "수업시작시간" column="수업시작시간"/>
+        <result property = "수업종료시간" column="수업종료시간"/>
+
+        <result property = "수강신청시작시간" column="수강신청시작시간"/>
+        <result property = "수강신청종료시간" column="수강신청종료시간"/>
+
+        <result property = "수강신청가능여부" column="수강신청가능여부"/>
+    </resultMap>
+
+
+    <!--수강신청을 입력하는 쿼리-->
+    <insert id="수강신청입력">
+        INSERT INTO 수강신청(교과목번호, 사용자ID) VALUES (#{교과목번호}, #{사용자ID});
+    </insert>
+
+    <!--전체 학생의 수강신청 목록을 출력하는 쿼리-->
+    <select id="전체수강신청목록출력" resultMap="수강신청">
+        SELECT * FROM 수강신청;
+    </select>
+
+    <!--로그인하고 있는 학생의 시간표를 출력하는 쿼리-->
+    <select id="개인수강신청목록출력" resultMap="개설교과목">
+        SELECT * FROM 개설교과목
+        natural join 교과목
+        natural join 강의시간
+        natural join 수강신청기간
+        NATURAL JOIN (SELECT 교과목번호, 수강신청시작시간 <![CDATA[ <= ]]> now() AND now() <![CDATA[ <= ]]> 수강신청종료시간 AS 수강신청가능여부
+        FROM 수강신청기간) AS 수강신청가능여부
+        where exists(
+        select 교과목번호 FROM 수강신청
+        natural join 학생
+        where 개설교과목.교과목번호 = 수강신청.교과목번호
+        and 학생.사용자ID = #{사용자ID})
+        ORDER BY FIELD(수업요일, "월", "화", "수", "목", "금"),
+        수업시작시간 ASC;
+    </select>
+
+    <!--수강신청을 수정하는 쿼리-->
+    <update id="수강신청수정">
+        UPDATE 수강신청 SET (교과목번호, 사용자ID) = (#{교과목이름}, #{사용자ID});
+    </update>
+
+    <!--선택한 수강과목을 수강신청 테이블에서 삭제하는 쿼리-->
+    <delete id="수강신청삭제">
+        DELETE FROM 수강신청 WHERE 교과목번호 = #{교과목번호} AND 사용자ID = #{사용자ID};
+    </delete>
+
+    <!--특정 교과목을 수강신청한 학생의 목록을 출력하는 쿼리-->
+    <select id="교과목수강신청학생목록조회" resultMap="교과목수강신청학생목록조회">
+        SELECT 사용자ID, 사용자명, 학년, 학과명 FROM 학생
+        NATURAL JOIN 사용자
+        NATURAL JOIN 수강신청
+        WHERE 교과목번호 = #{교과목번호};
+    </select>
+
+    <!--학생의 신청 과목 수와 신청 총 학점을 출력하는 쿼리-->
+    <select id="학생수강신청입력관련정보출력" resultMap="학생수강신청입력관련정보">
+        SELECT 사용자ID, 신청과목수, 신청총학점
+        FROM 학생
+        WHERE 사용자ID = #{사용자ID};
+    </select>
+
+    <!--학생의 신청 과목 수와 신청 총 학점을 변경하는 쿼리. 모든 학생이 초기에는 수강 과목이 없다고 생각해 미사용-->
+    <update id="학생수강신청입력관련정보갱신" >
+        UPDATE 학생
+        SET (신청과목수, 신청총학점) = (#{신청과목수}, #{신청총학점})
+        WHERE 사용자ID = #{사용자ID};
+    </update>
+</mapper>
